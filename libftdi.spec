@@ -1,14 +1,13 @@
 Name:		libftdi
-Version:	1.4
+Version:	1.5
 Release:	1
 Summary:	Library to program and control the FTDI USB controller
 License:	LGPL-2.0-only
 URL:		http://www.intra2net.com/de/produkte/opensource/ftdi/
 Source0:	http://www.intra2net.com/en/developer/%{name}/download/%{name}1-%{version}.tar.bz2
 
-# Swig requirements have changed in newer versions of CMake.
-# This has been reported to the mailing list
-Patch0:         libftdi-cmake_swig.patch
+# http://developer.intra2net.com/git/?p=libftdi;a=commitdiff;h=cdb28383402d248dbc6062f4391b038375c52385;hp=5c2c58e03ea999534e8cb64906c8ae8b15536c30
+Patch0:		libftdi-1.5-fix_pkgconfig_path.patch
 
 BuildRequires:	cmake3 gcc-c++ doxygen boost-devel libconfuse-devel libusbx-devel python3-devel swig
 Requires:	systemd
@@ -59,7 +58,13 @@ sed -i -e 's/GROUP="plugdev"/TAG+="uaccess"/g' packages/99-libftdi.rules
 export CMAKE_PREFIX_PATH=%{_prefix}
 
 mkdir build-py3 && pushd build-py3
-%{cmake3} -DPython_ADDITIONAL_VERSIONS=%{python3_version} ..
+%{cmake3} \
+    -DDOCUMENTATION=ON \
+    -DFTDIPP=ON \
+    -DSTATICLIBS=off \
+    -DPYTHON_BINDINGS=ON \
+    -DPython_ADDITIONAL_VERSIONS=%{python3_version} \
+    ..
 %make_build
 popd
 
@@ -92,8 +97,9 @@ rm -f %{buildroot}%{_bindir}/find_all_pp
 rm -f %{buildroot}%{_bindir}/baud_test
 rm -f %{buildroot}%{_bindir}/serial_read
 rm -f %{buildroot}%{_bindir}/serial_test
-rm -rf %{buildroot}%{_libdir}/cmake*
+
 rm -rf %{buildroot}%{_datadir}/doc/libftdi1/example.conf
+rm -f %{buildroot}%{_datadir}/doc/libftdipp1/example.conf
 
 %check
 #make check
@@ -105,13 +111,14 @@ rm -rf %{buildroot}%{_datadir}/doc/libftdi1/example.conf
 /lib/udev/rules.d/69-libftdi.rules
 
 %files devel
-%doc build-py3/doc/html
 %doc %{_datadir}/libftdi/examples
 %{_bindir}/ftdi_eeprom
 %{_bindir}/libftdi1-config
 %{_libdir}/libftdi1.so
 %{_includedir}/libftdi1
+%{_includedir}/libftdi1/*.h
 %{_libdir}/pkgconfig/libftdi1.pc
+%{_libdir}/cmake/libftdi1/
 %{_mandir}/man3/*
 
 %files -n python3-libftdi
@@ -123,12 +130,15 @@ rm -rf %{buildroot}%{_datadir}/doc/libftdi1/example.conf
 
 %files c++-devel
 %{_libdir}/libftdipp1.so
-%{_includedir}/libftdi1/*hpp
+%{_includedir}/libftdi1/*.hpp
 %{_libdir}/pkgconfig/libftdipp1.pc
 
 %ldconfig_scriptlets
 %ldconfig_scriptlets c++
 
 %changelog
+* Mon Sep 26 2022 Jingwiw <wangjingwei@iscas.ac.cn> - 1.5-1
+- upgrade to 1.5 for python10
+
 * Fri Dec 10 2021 zhangshaoning <zhangshaoning@uniontech.com> - 1.4-1
 - init package

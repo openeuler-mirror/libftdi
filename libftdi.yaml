@@ -1,0 +1,4 @@
+version_control: git
+src_repo: git://developer.intra2net.com/libftdi
+tag_prefix: "^v"
+seperator: "."
